@@ -6,6 +6,8 @@ import difflib
 from discord.ext import commands
 from dotenv import load_dotenv
 
+keep_alive()
+
 # Load environment variables
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
