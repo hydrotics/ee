@@ -1,0 +1,3 @@
+discord.py
+spacy
+python-dotenv
