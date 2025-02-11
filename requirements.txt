@@ -1,3 +1,5 @@
 discord.py
 spacy
 python-dotenv
+flask
+gunicorn
