@@ -16,13 +16,12 @@ def home():
     return "I'm alive!"
 
 def run():
-    app.run(host="0.0.0.0", port=8080)
+    os.system("gunicorn -w 1 -b 0.0.0.0:8080 main:app")  # Run Gunicorn server
 
 def keep_alive():
     server = Thread(target=run)
     server.start()
 
-keep_alive()
 
 # Load environment variables
 load_dotenv()
