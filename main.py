@@ -16,7 +16,7 @@ def home():
     return "I'm alive!"
 
 def run():
-    os.system("gunicorn -w 1 -b 0.0.0.0:8080 main:app")  # Run Gunicorn server
+    app.run(host="0.0.0.0", port=8080)
 
 def keep_alive():
     server = Thread(target=run)
