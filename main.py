@@ -24,32 +24,29 @@ def keep_alive():
 
 keep_alive()
 
-# Load environment variables
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-CHANNEL_ID = 1324435423602413664  # Your channel ID
 
-# Load NLP model
 nlp = spacy.load("en_core_web_sm")
 
-# Load responses from JSON
+# Load responses and other data from JSON
 def load_triggers():
     try:
         with open("triggers.json", "r", encoding="utf-8") as file:
-            return json.load(file)["responses"]
+            return json.load(file)
     except (FileNotFoundError, json.JSONDecodeError) as e:
         print(f"⚠️ Error loading triggers.json: {e}")
         return {}
 
-RESPONSES = load_triggers()
+data = load_triggers()
+RESPONSES = data.get("responses", {})
+CHANNEL_ID = data.get("channel_id", 1324435423602413664)
+QUESTION_START = set(data.get("question_words", []))
 
 # Discord bot setup
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
-
-# Define question words
-QUESTION_START = {"when", "how", "what", "where", "will", "can", "does", "is", "should", "has", "I need"}
 
 # AI function to detect category (update, mobile, etc.) based on triggers from JSON
 def detect_category(message):
@@ -93,14 +90,10 @@ def get_response(message):
 
     print(f"🔎 Analyzing message: {message}")  # Debug log
 
-    # --- NEW BLOCK: Complaint + Required Trigger Check ---
-    # Define sets for complaint words and required trigger words.
     complaint_words = {"complain", "moan", "annoyed", "tired", "sick", "waiting", "long"}
     required_triggers = {"update", "mobile", "support"}
-    
-    # Check if the message contains any complaint word and any required trigger.
+
     if any(word in message.lower() for word in complaint_words) and any(word in message.lower() for word in required_triggers):
-        # Determine which required trigger word is present.
         req_category = None
         if "update" in message.lower():
             req_category = "update"
@@ -114,20 +107,17 @@ def get_response(message):
             for resp, data in RESPONSES.items():
                 if data.get("category") == req_category:
                     return resp
-    # --- END NEW BLOCK ---
-
+                    
     # Detect category (update, mobile, etc.)
     intent, category = analyze_intent(message)
 
     for response, data in RESPONSES.items():
         triggers = set(word.lower() for word in data["triggers"])
-        response_category = data.get("category", None)  # Ensure JSON has "category"
+        response_category = data.get("category", None)
 
-        # Only consider responses that match the detected category
         if category and response_category and response_category != category:
             continue
 
-        # Score relevance based on fuzzy matching
         trigger_matches = sum(
             1 for token in doc if any(difflib.SequenceMatcher(None, token.text, trigger).ratio() > 0.8 for trigger in triggers)
         )
@@ -139,7 +129,6 @@ def get_response(message):
             highest_score = score
             matched_response = response
 
-    # Respond based on detected intent
     if intent == "asking":
         print(f"✅ Responding with: {matched_response} (User is asking about {category})")
         return matched_response
@@ -149,11 +138,9 @@ def get_response(message):
         print("❌ No response matched.")
         return None
 
-# Event when a message is received
 @bot.event
 async def on_message(message):
     if message.channel.id == CHANNEL_ID and not message.author.bot:
-        # Check for hacker-related phrases (preserved functionality)
         hacker_keywords = ["report", "exploiter", "hacker", "support", "support server", "help", "server", "cheater", "theres a hacker in my server"]
         if any(difflib.SequenceMatcher(None, word, keyword).ratio() > 0.8 for word in message.content.lower().split() for keyword in hacker_keywords):
             response = get_response(message.content)
