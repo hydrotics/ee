@@ -12,5 +12,7 @@
       "triggers": ["report", "exploiter", "hacker", "support", "support server", "help", "server", "cheater", "theres a hacker in my server"],
       "category": "reporting"
     }
-  }
+  },
+  "channel_id": 1324435423602413664,
+  "question_words": ["when", "how", "what", "where", "will", "can", "does", "is", "should", "has", "i need"]
 }
