@@ -1,18 +1,58 @@
 {
-  "responses": {
-    "> The revamp release date is estimated to release Mid 2025, the owner has had issues with IRL life and the animator not working, leading to the delayed update. Please be patient as the Developers are working very hard to release this update.": {
-      "triggers": ["update", "revamp", "release", "droping", "coming out", "waiting", "so long", "forever", "impatient", "tired of waiting", "can't wait", "ive been waiting"],
-      "category": "update"
+    "responses": {
+        "> The revamp release date is estimated to release Mid 2025, the owner has had issues with IRL life and the animator not working, leading to the delayed update. Please be patient as the Developers are working very hard to release this update.": {
+            "triggers": [
+                "update",
+                "revamp",
+                "release",
+                "droping",
+                "coming out",
+                "waiting",
+                "so long",
+                "forever",
+                "impatient",
+                "tired of waiting",
+                "can't wait",
+                "ive been waiting"
+            ],
+            "category": "update"
+        },
+        "> Mobile support will not be available until the update. Please be patient.": {
+            "triggers": [
+                "mobile",
+                "support",
+                "phone"
+            ],
+            "category": "mobile"
+        },
+        "> __**Link to Levi's Projects Support Server**__ https://discord.gg/edQF7AhTf6": {
+            "triggers": [
+                "report",
+                "exploiter",
+                "hacker",
+                "support",
+                "support server",
+                "help",
+                "server",
+                "cheater",
+                "theres a hacker in my server",
+                "exploiting"
+            ],
+            "category": "reporting"
+        }
     },
-    "> Mobile support will not be available until the update. Please be patient.": {
-      "triggers": ["mobile", "support", "phone"],
-      "category": "mobile"
-    },
-    "> __**Link to Levi's Projects Support Server**__ https://discord.gg/edQF7AhTf6": {
-      "triggers": ["report", "exploiter", "hacker", "support", "support server", "help", "server", "cheater", "theres a hacker in my server"],
-      "category": "reporting"
-    }
-  },
-  "channel_id": 1324435423602413664,
-  "question_words": ["when", "how", "what", "where", "will", "can", "does", "is", "should", "has", "i need"]
+    "channel_id": 1340010486271443036,
+    "question_words": [
+        "when",
+        "how",
+        "what",
+        "where",
+        "will",
+        "can",
+        "does",
+        "is",
+        "should",
+        "has",
+        "i need"
+    ]
 }
