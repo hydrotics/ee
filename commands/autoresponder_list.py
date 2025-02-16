@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from main import TRIGGERS_DATA, EMBED_COLOR_HEX
+from main import EMBED_COLOR_HEX, load_triggers  # Import load_triggers from main
 
 class AutoresponderList(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -12,11 +12,16 @@ class AutoresponderList(commands.Cog):
         description="Lists all autoresponders created by command."
     )
     async def autoresponder_list(self, interaction: discord.Interaction):
-        responses = TRIGGERS_DATA.get("responses", {})
+        # Reload triggers from disk
+        triggers_data = load_triggers()
+        responses = triggers_data.get("responses", {})
+
         embed = discord.Embed(title="Autoresponder List", color=EMBED_COLOR_HEX)
 
+        # Filter to only include those created via command
         created_responses = {
-            cat: data for cat, data in responses.items() if data.get("created_by_command")
+            cat: data for cat, data in responses.items()
+            if data.get("created_by_command") is True
         }
 
         if not created_responses:
