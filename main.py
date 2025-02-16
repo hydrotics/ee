@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from flask import Flask
 from threading import Thread
 import asyncio
+import time
 
 # --- Customization Options ---
 EMBED_COLOR_HEX = 0xFFFFFF
@@ -275,23 +276,25 @@ async def autoresponder_list(interaction: discord.Interaction):
 # --- Bot Run ---
 @bot.event
 async def on_ready():
+    print(f'Logged in as {bot.user}')
+    # Ensure you don't sync commands or other actions unnecessarily
+    # You can add a delay before syncing commands, or only sync when needed
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Levi's Projects"))
     await bot.tree.sync()
-    print(f"Logged in as {bot.user}")
 
 @bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
-
-    # Only respond in the designated autoresponder channel (if set)
-    channel_id = TRIGGERS_DATA.get("channel_id")
-    if channel_id and message.channel.id != channel_id:
-        return
-
-    response = get_response(message)
-    if response:
-        await message.channel.send(response)
-        await asyncio.sleep(1)  # Adds a small delay to prevent hitting rate limits
+async def on_ready():
+    try:
+        # Sync commands with a delay to avoid hitting rate limits
+        await bot.tree.sync()
+        await asyncio.sleep(5)
+    except discord.errors.HTTPException as e:
+        if e.status == 429:
+            # Handle rate limiting error
+            reset_time = int(e.response.headers['X-RateLimit-Reset'])
+            retry_after = reset_time - time.time()
+            print(f"Rate-limited during sync, retrying after {retry_after} seconds.")
+            await asyncio.sleep(retry_after)
+            await bot.tree.sync()  # Retry syncing after waiting
 
 bot.run(TOKEN)
