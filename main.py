@@ -8,6 +8,7 @@ from discord import app_commands
 from dotenv import load_dotenv
 from flask import Flask
 from threading import Thread
+import asyncio
 
 # --- Customization Options ---
 EMBED_COLOR_HEX = 0xFFFFFF
@@ -291,5 +292,6 @@ async def on_message(message):
     response = get_response(message)
     if response:
         await message.channel.send(response)
+        await asyncio.sleep(1)  # Adds a small delay to prevent hitting rate limits
 
 bot.run(TOKEN)
