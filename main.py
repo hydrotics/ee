@@ -284,17 +284,21 @@ async def on_ready():
 
 @bot.event
 async def on_ready():
+    print(f'Logged in as {bot.user}')
+    # Delay syncing or remove it if unnecessary
+    await asyncio.sleep(5)  # Adding a short delay to let the bot stabilize
     try:
-        # Sync commands with a delay to avoid hitting rate limits
         await bot.tree.sync()
-        await asyncio.sleep(5)
+        print("Commands synced.")
     except discord.errors.HTTPException as e:
         if e.status == 429:
-            # Handle rate limiting error
+            print("Rate limited while syncing commands. Retrying...")
+            await asyncio.sleep(10)  # Wait a bit longer before retrying
+            await bot.tree.sync()  # Retry syncing after waiting
             reset_time = int(e.response.headers['X-RateLimit-Reset'])
             retry_after = reset_time - time.time()
-            print(f"Rate-limited during sync, retrying after {retry_after} seconds.")
+            print(f"Rate-limited during login, retrying after {retry_after} seconds.")
             await asyncio.sleep(retry_after)
-            await bot.tree.sync()  # Retry syncing after waiting
-
+            await bot.start(TOKEN)
+            
 bot.run(TOKEN)
