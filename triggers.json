@@ -13,7 +13,11 @@
                 "impatient",
                 "tired of waiting",
                 "can't wait",
-                "ive been waiting"
+                "ive been waiting",
+                "updates",
+                "released",
+                "waited",
+                "waiting for"
             ],
             "category": "update"
         },
@@ -21,7 +25,9 @@
             "triggers": [
                 "mobile",
                 "support",
-                "phone"
+                "phone",
+                "mobiles",
+                "phones"
             ],
             "category": "mobile"
         },
@@ -36,12 +42,20 @@
                 "server",
                 "cheater",
                 "theres a hacker in my server",
-                "exploiting"
+                "exploiting",
+                "hackers",
+                "hacked",
+                "hack",
+                "cheating",
+                "cheaters",
+                "exploiters",
+                "ticket"
             ],
             "category": "reporting"
         }
     },
     "channel_id": 1340010486271443036,
+    "required_role_id": 1324435769913507902,
     "question_words": [
         "when",
         "how",
@@ -53,6 +67,53 @@
         "is",
         "should",
         "has",
-        "i need"
-    ]
+        "need",
+        "why",
+        "does"
+    ],
+    "force": {
+        "reporting": [
+            "there's a hacker in my game",
+            "there's an exploiter in my game",
+            "there is a hacker in my game",
+            "there is an exploiter in my game",
+            "there's a hacker in my server",
+            "there's an exploiter in my server",
+            "there is a hacker in my server",
+            "there is an exploiter in my server",
+            "theres a hacker in my game",
+            "theres an exploiter in my game",
+            "theres a hacker in my server",
+            "theres an exploiter in my server",
+            "theres a hacker in this game",
+            "theres an exploiter in this game",
+            "theres a hacker in the game",
+            "theres an exploiter in the game",
+            "theres an exploiter in my server",
+            "theres a hacker ruining my game",
+            "theres an exploiter ruining my game",
+            "theres a hacker ruining my server",
+            "theres an exploiter ruining my server",
+            "theres a hacker affecting my game",
+            "theres an exploiter affecting my game",
+            "theres a hacker affecting my server",
+            "theres an exploiter affecting my server",
+            "there’s a hacker in my game",
+            "there’s an exploiter in my game",
+            "there’s a hacker in my server",
+            "there’s an exploiter in my server",
+            "there’s a hacker in the game",
+            "there’s an exploiter in the game",
+            "there’s a hacker in my game",
+            "there’s an exploiter in my game",
+            "there’s a hacker in my server",
+            "there’s an exploiter in my server",
+            "hacker in my game",
+            "help exploiter",
+            "someone exploiting",
+            "I need help",
+            "Does this game have a ticket system"
+        ]
+    },
+    "role_id": null
 }
