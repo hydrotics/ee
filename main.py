@@ -154,7 +154,17 @@ async def main():
         await bot.load_extension("commands.autoresponder_create")
         await bot.load_extension("commands.autoresponder_delete")
         await bot.load_extension("commands.autoresponder_channel")
-        await bot.start(TOKEN)
+        # Start the bot
+        task = asyncio.create_task(bot.start(TOKEN))
+
+        # Run Flask on a separate thread
+        def run_flask():
+            app.run(host="0.0.0.0", port=8080)
+
+        flask_thread = Thread(target=run_flask)
+        flask_thread.start()
+
+        await task
 
 if __name__ == "__main__":
     asyncio.run(main())
