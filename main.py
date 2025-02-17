@@ -13,12 +13,21 @@ import asyncio
 # --- Customization Options ---
 EMBED_COLOR_HEX = 0xFFFFFF
 
-# --- Flask App Setup (WSGI callable for Gunicorn) ---
+# --- Keep-Alive Setup ---
 app = Flask(__name__)
 
 @app.route("/")
 def home():
     return "I'm alive!"
+
+def run():
+    app.run(host="0.0.0.0", port=8080)
+
+def keep_alive():
+    server = Thread(target=run)
+    server.start()
+
+keep_alive()
 
 # --- Environment and Bot Setup ---
 load_dotenv()
