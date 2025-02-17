@@ -6,7 +6,9 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 load_dotenv()
-ROLE_ID = int(os.getenv("ROLE_ID"))
+
+# Load multiple role IDs from .env (split them by commas)
+ROLE_IDS = [int(role_id) for role_id in os.getenv("ROLE_IDS", "").split(",")]
 
 def load_triggers():
     try:
@@ -24,11 +26,16 @@ class AutoresponderChannel(commands.Cog):
         self.bot = bot
 
     @app_commands.command(
-        name="autoresponder-channel", 
+        name="autoresponder-config", 
         description="Sets the channel where the bot will listen for trigger messages."
     )
-    async def autoresponder_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
-        if ROLE_ID not in [role.id for role in interaction.user.roles]:
+    async def autoresponder_config(
+        self, 
+        interaction: discord.Interaction, 
+        channel: discord.TextChannel,
+    ):
+        # Check if the user has one of the allowed roles
+        if not any(role.id in ROLE_IDS for role in interaction.user.roles):
             await interaction.response.send_message(
                 "❌ You do not have the required role to use this command.", ephemeral=True
             )
