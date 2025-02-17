@@ -23,7 +23,7 @@ def home():
 # --- Environment and Bot Setup ---
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-ROLE_ID = int(os.getenv("ROLE_ID"))
+ROLE_IDS = [int(role_id.strip()) for role_id in os.getenv("ROLE_IDS", "").split(",")]
 nlp = spacy.load("en_core_web_sm")
 
 def load_triggers():
