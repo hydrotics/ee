@@ -54,7 +54,6 @@
             "category": "reporting"
         }
     },
-    "channel_id": 1340010486271443036,
     "required_role_id": 1324435769913507902,
     "question_words": [
         "when",
@@ -115,5 +114,9 @@
             "Does this game have a ticket system"
         ]
     },
-    "role_id": null
+    "role_id": null,
+    "channel_ids": [
+        1341770639849033860,
+        1340010486271443036
+    ]
 }
