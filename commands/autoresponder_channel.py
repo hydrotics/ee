@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Load multiple role IDs from .env (split them by commas)
-ROLE_IDS = [int(role_id) for role_id in os.getenv("ROLE_IDS", "").split(",")]
+# Load allowed role IDs from .env (split by commas)
+ROLE_IDS = [int(role_id) for role_id in os.getenv("ROLE_IDS", "").split(",") if role_id.strip()]
 
 def load_triggers():
     try:
@@ -27,12 +27,13 @@ class AutoresponderChannel(commands.Cog):
 
     @app_commands.command(
         name="autoresponder-config", 
-        description="Sets the channel where the bot will listen for trigger messages."
+        description="Sets two channels where the bot will listen for trigger messages."
     )
     async def autoresponder_config(
         self, 
         interaction: discord.Interaction, 
-        channel: discord.TextChannel,
+        channel1: discord.TextChannel, 
+        channel2: discord.TextChannel
     ):
         # Check if the user has one of the allowed roles
         if not any(role.id in ROLE_IDS for role in interaction.user.roles):
@@ -42,17 +43,16 @@ class AutoresponderChannel(commands.Cog):
             return
 
         triggers_data = load_triggers()
-        if triggers_data.get("channel_id") == channel.id:
-            await interaction.response.send_message(
-                "❌ This channel is already set as the autoresponder channel.", ephemeral=True
-            )
-        else:
-            triggers_data["channel_id"] = channel.id
-            save_triggers(triggers_data)
-            await interaction.response.send_message(
-                f"✅ The autoresponder channel has been set to {channel.mention}. The bot will now only respond in this channel.",
-                ephemeral=True
-            )
+
+        # Ensure "channel_ids" exists as a list
+        triggers_data["channel_ids"] = [channel1.id, channel2.id]
+
+        save_triggers(triggers_data)
+
+        await interaction.response.send_message(
+            f"✅ Autoresponder channels have been set to {channel1.mention} and {channel2.mention}.",
+            ephemeral=True
+        )
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AutoresponderChannel(bot))
