@@ -147,11 +147,17 @@ async def on_ready():
 async def on_message(message):
     if message.author.bot:
         return
+
     # Refresh the triggers data so any changes from commands are applied
     refresh_triggers()
-    channel_id = TRIGGERS_DATA.get("channel_id")
-    if channel_id and message.channel.id != channel_id:
+
+    # Get the list of allowed channels
+    channel_ids = TRIGGERS_DATA.get("channel_ids", [])
+
+    # Check if message is in one of the allowed channels
+    if not channel_ids or message.channel.id not in channel_ids:
         return
+
     response = get_response(message)
     if response:
         await message.channel.send(response)
