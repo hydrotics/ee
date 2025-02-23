@@ -76,9 +76,8 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 # --- Utility Functions ---
 def get_response(message):
+    # Process the message without enforcing a minimum word count.
     doc = nlp(message.content.lower())
-    if len(message.content.split()) < 2:
-        return None
 
     # Refresh trigger data from file
     with open("triggers.json", "r", encoding="utf-8") as f:
@@ -86,24 +85,23 @@ def get_response(message):
 
     for autoresponder_name, data in triggers_data.get("responses", {}).items():
         triggers = set(data.get("triggers", []))
-
-        # Default smart detection to "yes" if missing
+        # Default smart detection to True ("yes") if missing.
         smart_detection = data.get("smart_detection", True)
 
-        # If smart detection is OFF ("no"), respond if ANY trigger appears anywhere in the message
         if not smart_detection:
+            # When smart detection is "no", reply if ANY trigger is found anywhere in the message.
             if any(trigger in message.content.lower().split() for trigger in triggers):
                 return data.get("response", autoresponder_name)
-
-        # If smart detection is ON ("yes"), require context (question words or structured phrase)
         else:
+            # When smart detection is "yes", require both a question word and a trigger match.
             question_words_in_message = any(token.text in QUESTION_START for token in doc)
             trigger_matches = sum(
-                1 for token in doc if any(difflib.SequenceMatcher(None, token.text, trigger).ratio() > 0.8 for trigger in triggers)
+                1 for token in doc if any(
+                    difflib.SequenceMatcher(None, token.text, trigger).ratio() > 0.8
+                    for trigger in triggers)
             )
             if question_words_in_message and trigger_matches > 0:
                 return data.get("response", autoresponder_name)
-
     return None
 
 @bot.event
@@ -117,14 +115,11 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    # Refresh the triggers data so any changes from commands are applied
     refresh_triggers()
 
-    # Get the list of allowed channels
+    # If allowed channels are defined, ensure the message is in one of them.
     channel_ids = TRIGGERS_DATA.get("channel_ids", [])
-
-    # Check if message is in one of the allowed channels
-    if not channel_ids or message.channel.id not in channel_ids:
+    if channel_ids and message.channel.id not in channel_ids:
         return
 
     response = get_response(message)
@@ -136,12 +131,10 @@ async def main():
     async with bot:
         await bot.load_extension("commands.autoresponder_list")
         await bot.load_extension("commands.autoresponder_create")
-        await bot.load_extension("commands.autoresponder_edit")  # Ensure edit command is loaded
+        await bot.load_extension("commands.autoresponder_edit")
         await bot.load_extension("commands.autoresponder_delete")
         await bot.load_extension("commands.autoresponder_channel")
-        # Start the bot
         task = asyncio.create_task(bot.start(TOKEN))
-
         await task
 
 if __name__ == "__main__":
