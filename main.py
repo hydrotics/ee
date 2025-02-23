@@ -41,12 +41,19 @@ def load_triggers():
             data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         data = {}
+
     if "responses" not in data:
         data["responses"] = {}
     if "question_words" not in data:
         data["question_words"] = []
     if "force" not in data:
         data["force"] = {}
+
+    # Ensure all autoresponders default to smart detection enabled (yes)
+    for key, value in data.get("responses", {}).items():
+        if "smart_detection" not in value:
+            value["smart_detection"] = True  # Default to "yes"
+
     return data
 
 def save_triggers(triggers_data):
@@ -68,73 +75,35 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # --- Utility Functions ---
-def detect_category(message):
-    doc = nlp(message.lower())
-    detected_category = None
-    highest_match_count = 0
-    for resp, data in TRIGGERS_DATA.get("responses", {}).items():
-        triggers = data.get("triggers", [])
-        if not triggers:
-            continue
-        match_count = sum(
-            1 for token in doc if any(difflib.SequenceMatcher(None, token.text, trigger).ratio() > 0.8 for trigger in triggers)
-        )
-        if match_count > highest_match_count:
-            highest_match_count = match_count
-            detected_category = data.get("category", None)
-    return detected_category
-
-def analyze_intent(message):
-    doc = nlp(message.lower())
-    is_question = any(token.text in QUESTION_START for token in doc) or message.endswith("?")
-    detected_category = detect_category(message)
-    if is_question and detected_category:
-        return "asking", detected_category
-    elif detected_category:
-        return "informing", detected_category
-    return "neutral", None
-
 def get_response(message):
     doc = nlp(message.content.lower())
     if len(message.content.split()) < 2:
         return None
 
-    question_words_in_message = [token.text for token in doc if token.text in QUESTION_START]
-    if not question_words_in_message:
-        return None
+    # Refresh trigger data from file
+    with open("triggers.json", "r", encoding="utf-8") as f:
+        triggers_data = json.load(f)
 
-    complaint_keywords = {"complain", "annoyed", "tired", "sick", "waiting", "long", "give us"}
-    required_triggers = {"update", "mobile", "support"}
-    force_triggers = TRIGGERS_DATA.get("force", {})
-    reporting_force_triggers = force_triggers.get("reporting", [])
+    for autoresponder_name, data in triggers_data.get("responses", {}).items():
+        triggers = set(data.get("triggers", []))
 
-    # Check force triggers first
-    if any(trigger in message.content.lower() for trigger in reporting_force_triggers):
-        return "> __**Link to Levi's Projects Support Server**__ https://discord.gg/edQF7AhTf6"
+        # Default smart detection to "yes" if missing
+        smart_detection = data.get("smart_detection", True)
 
-    if (any(word in message.content.lower() for word in complaint_keywords) and 
-        any(word in message.content.lower() for word in required_triggers)):
-        for resp, data in TRIGGERS_DATA.get("responses", {}).items():
-            if data.get("category") in required_triggers:
-                return resp
+        # If smart detection is OFF ("no"), respond if ANY trigger appears anywhere in the message
+        if not smart_detection:
+            if any(trigger in message.content.lower().split() for trigger in triggers):
+                return data.get("response", autoresponder_name)
 
-    intent, category = analyze_intent(message.content)
-    matched_response = None
-    highest_score = 0
+        # If smart detection is ON ("yes"), require context (question words or structured phrase)
+        else:
+            question_words_in_message = any(token.text in QUESTION_START for token in doc)
+            trigger_matches = sum(
+                1 for token in doc if any(difflib.SequenceMatcher(None, token.text, trigger).ratio() > 0.8 for trigger in triggers)
+            )
+            if question_words_in_message and trigger_matches > 0:
+                return data.get("response", autoresponder_name)
 
-    for cat, data in TRIGGERS_DATA.get("responses", {}).items():
-        response_text = data.get("response", cat)
-        triggers = set(word.lower() for word in data.get("triggers", []))
-        trigger_matches = sum(
-            1 for token in doc if any(difflib.SequenceMatcher(None, token.text, trigger).ratio() > 0.8 for trigger in triggers)
-        )
-        score = trigger_matches / len(triggers) if triggers else 0
-        if score > highest_score:
-            highest_score = score
-            matched_response = response_text
-
-    if intent in ["asking", "informing"] and matched_response:
-        return matched_response
     return None
 
 @bot.event
@@ -167,6 +136,7 @@ async def main():
     async with bot:
         await bot.load_extension("commands.autoresponder_list")
         await bot.load_extension("commands.autoresponder_create")
+        await bot.load_extension("commands.autoresponder_edit")  # Ensure edit command is loaded
         await bot.load_extension("commands.autoresponder_delete")
         await bot.load_extension("commands.autoresponder_channel")
         # Start the bot
