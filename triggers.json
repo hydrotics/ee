@@ -52,6 +52,16 @@
                 "ticket"
             ],
             "category": "reporting"
+        },
+        "Sanguine": {
+            "triggers": [
+                "sanguine",
+                "sanguine 2026"
+            ],
+            "category": "Sanguine",
+            "response": "Sanguine is a rename of Supernatural 2.",
+            "smart_detection": true,
+            "created_by_command": true
         }
     },
     "required_role_id": 1324435769913507902,
@@ -116,7 +126,8 @@
     },
     "role_id": null,
     "channel_ids": [
-        1341770639849033860,
-        1340010486271443036
-    ]
+        955099277208723529,
+        1324433067837882450
+    ],
+    "embed_color": 16777215
 }
