@@ -11,7 +11,19 @@ from threading import Thread
 import asyncio
 
 # --- Customization Options ---
-EMBED_COLOR_HEX = 0xFFFFFF
+def get_embed_color():
+    """Get embed color from triggers.json"""
+    try:
+        with open("triggers.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data.get("embed_color", 0xFFFFFF)
+    except:
+        return 0xFFFFFF
+
+EMBED_COLOR_HEX = get_embed_color()
+
+# --- Environment Detection ---
+IS_RENDER = os.getenv("RENDER") is not None  # Render sets this env var automatically
 
 # --- Keep-Alive Setup ---
 app = Flask(__name__)
@@ -20,12 +32,30 @@ app = Flask(__name__)
 def home():
     return "I'm alive!"
 
-def run():
+@app.route("/health")
+def health():
+    return "OK", 200
+
+def run_dev():
+    """Run Flask development server (VS Code)"""
     app.run(host="0.0.0.0", port=8080)
 
+def run_prod():
+    """Run with Gunicorn (Render)"""
+    # Gunicorn will handle running the app
+    pass
+
 def keep_alive():
-    server = Thread(target=run)
-    server.start()
+    if IS_RENDER:
+        # On Render, Gunicorn handles the Flask app separately
+        # We don't need to start Flask in a thread
+        print("Running on Render - Gunicorn will handle Flask")
+    else:
+        # Local development - use Flask dev server
+        print("Running locally - starting Flask dev server")
+        server = Thread(target=run_dev)
+        server.daemon = True
+        server.start()
 
 keep_alive()
 
@@ -109,6 +139,7 @@ async def on_ready():
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Levi's Projects"))
     await bot.tree.sync()
     print(f"Logged in as {bot.user}")
+    print(f"Environment: {'Render (Production)' if IS_RENDER else 'Local (Development)'}")
 
 @bot.event
 async def on_message(message):
