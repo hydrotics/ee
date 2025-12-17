@@ -22,7 +22,6 @@ def get_embed_color():
         return 0xFFFFFF
 
 EMBED_COLOR_HEX = get_embed_color()
-
 IS_RENDER = os.getenv("RENDER") is not None
 
 app = Flask(__name__)
@@ -115,8 +114,9 @@ async def on_ready():
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Levi's Projects"))
     try:
         await bot.tree.sync()
-    except Exception:
-        pass
+        print("Slash commands synced")
+    except Exception as e:
+        print(f"Failed to sync commands: {e}")
     print(f"Logged in as {bot.user}")
     print(f"Environment: {'Render (Production)' if IS_RENDER else 'Local (Development)'}")
 
@@ -143,35 +143,23 @@ EXTENSIONS = [
     "commands.autoresponder_channel",
 ]
 
-BOT_THREAD_STARTED = False
-
-def start_bot_in_background():
-    global BOT_THREAD_STARTED
-    if BOT_THREAD_STARTED:
-        return
-    if not TOKEN:
-        print("DISCORD_TOKEN not set; bot will not start.")
-        return
-
-    def runner():
-        async def _boot():
-            for ext in EXTENSIONS:
-                try:
-                    bot.load_extension(ext)
-                except Exception as e:
-                    print(f"Failed to load extension {ext}: {e}")
-            try:
-                await bot.start(TOKEN)
-            except Exception as e:
-                print(f"Bot failed to start: {e}")
+async def start_bot():
+    for ext in EXTENSIONS:
         try:
-            asyncio.run(_boot())
+            await bot.load_extension(ext)
         except Exception as e:
-            print(f"Bot thread exited with error: {e}")
+            print(f"Failed to load extension {ext}: {e}")
+    try:
+        await bot.wait_until_ready()
+        await bot.tree.sync()
+        print("All slash commands synced")
+    except Exception as e:
+        print(f"Error syncing slash commands: {e}")
+    await bot.start(TOKEN)
 
-    thread = Thread(target=runner)
+def run_bot_thread():
+    thread = Thread(target=lambda: asyncio.run(start_bot()))
     thread.daemon = False
     thread.start()
-    BOT_THREAD_STARTED = True
 
-start_bot_in_background()
+run_bot_thread()
