@@ -7,6 +7,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Load multiple role IDs from .env (split them by commas)
+ROLE_IDS = [int(role_id) for role_id in os.getenv("ROLE_IDS", "").split(",")]
+
 def load_triggers():
     try:
         with open("triggers.json", "r", encoding="utf-8") as f:
@@ -87,6 +90,14 @@ class AutoresponderEdit(commands.Cog):
     @app_commands.command(name="autoresponder-edit", description="Edit an existing autoresponder category.")
     @app_commands.describe(category="Select the name of the autoresponder you want to edit")
     async def autoresponder_edit(self, interaction: discord.Interaction, category: str):
+        # Check if the user has one of the allowed roles
+        if not any(role.id in ROLE_IDS for role in interaction.user.roles):
+            await interaction.response.send_message(
+                "❌ You do not have the required role to use this command.",
+                ephemeral=True
+            )
+            return
+        
         data = load_triggers()
         if category not in data.get("responses", {}):
             await interaction.response.send_message(
